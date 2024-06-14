@@ -1,0 +1,104 @@
+Module Assignment - “Putting it all together: Creating a Web App- Part 2”
+Backend
+Overview
+
+In this project I am implementing the backend functionality to the last created assignment in 4th module using React JS which is Sales App by using node, express and mongoose and I created rest API for the following functionality according to assignment requirements i.e. user Registration, user login, adding new sales entry, top 5 sales for today and total revenue description mention below….
+
+Server.js
+
+1. In server file first I declare all the necessary modules like express, cors and mongoose for establishment of database connection and creating endpoints for the particular tasks and also includes file related to models and route and at last setting server to listen on port 5000.
+
+Config.js
+
+1. In config file I am setting up the url for mongo db database and also I am using JWT authentication in the app and setting the key for that in config file and both the module were imported by the server.js file.
+
+(Models)
+Sales model
+1.In this sales model I am defining a mongoose schema and this schema represents the structure for documents that will be stored in the related MongoDB collection with fields productName, quantity, amount and date with its data types like String and Number and required is used to indicate that this field is mandatory, and a document must have value.
+
+User model
+1.In this user model I am defining a mongoose schema and this schema represents the structure for documents that will be stored in the related MongoDB collection with fields firstName, lastName, email, password with its data types String and required is used to indicate that this field is mandatory, and a document must have value.
+
+(Routes)
+User route
+
+1. In user route first I declare the required modules like express, router for handling routes, bcryptjs for hashing password, JWT for authentication, mongoose library for database connection and userModel to interacting with schema for database queries and finally importing JWT SECRET key from the config file.
+2. Route to add new user:  I created function for registering user with .then and .catch first I take all the fields from requested body then check if it’s there is any null value for any field then I am sending json response with status 400 and with error message for the required field, after that I am checking if user is already registered with same email id then it throws an error message that user is already registered and next I am decrypting password with the bcrypt module after that I am saving registered user details in the mongoDB database using UserModel and findOne method with its required fields with decrypted password and then sending json response with success message for user registration with status code 201 and if user is not registered for any reason then catch statement throws error in console log.
+3.Login user Route : I created function for login user with .then and .catch first I take all the fields from requested body then check if it’s there is any null value for any field then I am sending json response with status 400 and with error message for the required field after that using UserModel and findOne method finding if the user with email is already available in the mongoDB database if not it throw error message of invalid user and in next step first I compare the passwords using bcrypt module then If user is available with valid credentials then first I am storing JWT token value in jwtToken with user id and all other user details stored in userInfo variable and finally send json response with status code 200 with token value and userInfo and if there is an error in any above process then catch function throws an error message in the console.
+
+Sales route
+1.In sales route first I declare the required modules like express, router for handling routes, mongoose library for database connection and SalesModel to interacting with schema for database queries and Importing the protectedRoute middleware for authentication.
+2.Route to add new sales entry : I created function for add new sales with .then and .catch first I take all the fields from requested body then check if it’s there is any null value for any field then I am sending json response with status 400 and with error message for the required field, then Creating a new sales entry and save it to the database and if there is any error than catch statement log error in console.
+3.Route to get top 5 sales entries for today :  I created function for getting top 5 sales entries for today with .then and .catch first I am storing todays date in today variable then resetting the time to the beginning of the another day and then with SalesModel I am finding the date data with greater than or equal to the beginning of today’s day time and sorting it to decrement sales entries values for today and limit to the top 5 and in next step I am checking if sales entries is greater than 0 in database then sending response as json with available sales entries else it will throw an error message of not available sales entries and in catch statement its log an error message in console if its there any problem in fetching sales entries also sending response with status code 500 and error message.
+4.Route to get total revenue :  I created function for add new sales with .then and .catch first I am calculating total revenue using aggregation it calculates the total revenue deom the SalesModel collection and $group is used to group all the documents into a single group and id is set to null its used as null because I want to sum all the document not any specific field with id and $sum is used to calculates the total sum of the 'amount' field in all documents.
+(Middleware)
+
+1. Middleware is created for the authentication purpose in that first I am importing all the necessary modules like jsonwebtoken library for working with JSON web token, jwt secret key from the config file and then UserModel for extracting user details.
+2. And then I am defining export module function and in function first I am extracting the authorization headers from the the incoming request and check if the authorization header is missing, if its missing it respond with an error message and a 401 status code after that I am extracting the token from the authorization header by removing the "Bearer " prefix and the verifying with the JWT token with the JWT secret key and if there is an error during JWT verification it respond with an error message and a 401 status code and then I am getting the user id from the payload then find that id in database and once it finds the user in the database, it assigns the user object to the req.user property which allows the user information to be accessed and finally calling next function which goes to the next available middleware or route.
+
+
+Frontend
+Overview
+In the frontend part first I created different components for the pages and import it to App.js and I am also using redux to manage user state auth in the frontend for using redux first I created a userReducer and creating a combineReducer for combining more than one reducer if any and finally I import the combine reducer file to store.js file then export it to index.js root file which is linked with App.js so indirectly it will available to all the other components and used Axios API for making HTTP requests and also Sweet alert for showing success and error messages and details description mention below
+
+
+App.js
+1.In App.js first I import all the components and react-router dom for routing purpose, useNavigate is used for dynamic redirection via userReducer first I am getting and removing user data from local storage and on that basis if user has active session then it will redirect to ‘/add-sales’ page and if not then it will redirect to ‘/login’ page and finally render all the components and navbar.
+
+Navbar.js
+1.In Navbar first I import NavLink , useNavigate from react-router-dom for navigation and purpose and also useDispatch and useSelector from react-redux, userReducer state is used in  useSelector to allows the component to access user data from redux store and useDispatch allows the component to dispatch actions to the Redux store also importing sweet alert for showing pop ups for success and error messages.
+2.Logout Function: This function called when the user clicks the logout link in function first I Remove the user's authentication token and user data from the browser's local storage. This logs the user out then Dispatches a "LOGIN_ERROR" action to the Redux store to update the user's login status and used the navigate function to redirect the user to the "login" route and with the help of sweet alert displaying a pop-up notification using Swal to inform the user that the logout was successful. 
+3.Rendering Navbar: I am using bootstrap classes for style the navbar and condtional rendering is used on whether the user is logged in (presence of an authentication token in local storage), different navigation links are displayed. The conditional rendering is achieved using {localStorage.getItem("token") != null If the user is logged in (token exists in local storage), the following links are displayed:
+a.) "SALES APP" (application name)
+b.) "ADD SALES"
+c.) "TOP 5 SALES"
+d.) "TOTAL REVENUE"
+e.) "LOGOUT”
+
+If the user is not logged in (no token in local storage), the following links are displayed:
+
+a.) "SALES APP" (application name)
+b.) "LOGIN"
+c.) "REGISTER"
+
+4. And finally the Navbar component is exported as the default export, making it available for use in other parts of the application.
+
+Registration.js
+1.First I import axios from the 'axios' library. It is used for making HTTP requests to the server, useState from react library, sweet alert for displaying pop-up error and success messages and finally API_BASE_URL  which is imported from  configuration file i.e. config.js, indicating the base URL for API requests.
+2.State Variables: Four state variables (firstName, lastName, email, and password) are initialized using the useState hook to manage the form input fields' values and loading state variable used to control the visibility of a loading spinner while waiting for a response from the server.
+3.registration Function: this function called when the user submits the form in the function first I used event.preventDefault() which prevents the default form submission behaviour and then sets the loading state to true to display the loading spinner and then creates a variable requestData which containing the user's input for firstName, lastName, email, and password after that sending post request to the server "/signup" endpoint using the axios.post method, with the requestData and then checking if the response status code is 201 (indicating a successful registration). If successful, it displays a success pop-up using Swal.fire and also clears the input fields by setting their values to empty strings and If there's an error like validation error or server error it logs the error to the console and displays an error pop-up and this error is coming from the backend and finally rendering the form containg the inputs fields for First Name, Last Name, Email  and Password and just before form If loading is true, it displays a loading spinner and Event handlers are used to update the state variables (First Name, Last Name, Email  and Password) as the user types into the input fields and Upon form submission, the registration function is called.
+4.And finally the Registration component is exported as the default export, making it available for use in other parts of the application.
+
+Login.js
+
+1.First I import useState, useNavigate, useDispatch, sweet alert, axios for making HTTP requests and finally API_BASE_URL  which is imported from  configuration file i.e. config.js, indicating the base URL for API requests.
+2.State Variables: Two state variables, email and password, are initialized using the useState hook to manage the values entered by the user in the email and password input fields and loading state variable used to control the visibility of a loading spinner while waiting for a response from the server.
+3. login Function: this function called when the user submits the form in the function first I used event.preventDefault() which prevents the default form submission behaviour and then sets the loading state to true to display the loading spinner and then creates a variable requestData which containing the user's input for user's email and password, after that sending post request to the server "/login" endpoint using the axios.post method. The request includes the requestData and then checking if the response status code is 200 (indicating a successful login). If its successful then first setting the loading state to false and stores the user's JWT token and user information in the browser's local storage and dispatches a Redux action of type 'LOGIN_SUCCESS' with the user data and redirects the user to the "/add-sales" page using navigate and displays a success pop-up notification using Swal.fire and If there's an error like validation error or server error, I am setting the loading to false and logs the error to the console and displays an error pop-up and this error is coming from the backend and finally rendering the form containg the inputs fields for Email and Password and just before form If loading is true, it displays a loading spinner and Event handlers are used to update the state variables (Email and password) as the user types into the input fields and Upon form submission, the login function is called.
+4.And finally the Login component is exported as the default export, making it available for use in other parts of the application.
+
+AddSales.js
+
+1. First I import axios from the 'axios' library. It is used for making HTTP requests to the server, useState from react library, sweet alert for displaying pop-up error and success messages and finally API_BASE_URL  which is imported from  configuration file i.e. config.js, indicating the base URL for API requests.
+2.State Variables: Three state variables (productName, quantity, amount) are initialized using the useState hook to manage the form input fields' values and loading state variable used to control the visibility of a loading spinner while waiting for a response from the server.
+3.CONFIG_OBJ: (CONFIG_OBJ) is defined to store request headers. It includes the "Authorization" header with a JWT token obtained from the browser's local storage.
+a.addsales Function: this function called when the user submits the form in the function first I used event.preventDefault() which prevents the default form submission behaviour and then sets the loading state to true to display the loading spinner and then creates a variable requestData which containing the user's input for product name, quantity, and amount after that sending post request to the server "/add-sale" endpoint using the axios.post method. The request includes the requestData and CONFIG_OBJ to authenticate the user and when response received I am checking if the response status code is 201 (indicating success). If successful, it displays a success pop-up using Swal.fire. It also clears the input fields by setting their values to empty strings and If there's any error like validation error or server error, I am setting the loading to false and logs the error to the console and displays an error pop-up and this error is coming from the backend and finally rendering the form containg the inputs fields for Product Name, Quantity, and Amount and just before form If loading is true, it displays a loading spinner and Event handlers are used to update the state variables (productName, quantity, amount) as the user types into the input fields and Upon form submission, the addsales function is called.
+4. And finally the AddSales component is exported as the default export, making it available for use in other parts of the application.
+
+TopSales.js
+1.First I import axios from the 'axios' library. It is used for making HTTP requests to the server,useEffect and useState from react library, sweet alert for displaying pop-up error and success messages and finally API_BASE_URL  which is imported from  configuration file i.e. config.js, indicating the base URL for API requests.
+2.State Variables: Defining a state variable topSales to store the list of top sales for the current day. It is initialized as an empty array using the useState hook.
+3.fetchTopSales function : This function defined to make an HTTP GET request to the server to fetch the top sales data. I am using the axios.get method to retrieve data from the server and in function If the response status is 200 (indicating a successful request), the retrieved data is stored in the topSales state variable using the setTopSales function and If there's an error, it displays a pop-up error notification using Swal.fire.
+4.useEffect Hook : I used useEffect to trigger the fetchTopSales function when the component is firstly rendered means it only called once when the page is load.
+5.Displaying Table : I used table with columns for S. No, Sales Id, Product Name, Quantity, and Sale Amount and the data for the table is generated by mapping over the topSales array and creating table rows for each sale entry. The map function creates a row for each sale, and the data from each sale is displayed in the columns.
+6.And finally the TopSales component is exported as the default export, making it available for use in other parts of the application.
+
+  TotalRevenue.js
+
+1.First I import axios from the 'axios' library. It is used for making HTTP requests to the server,useEffect and useState from react library, and finally API_BASE_URL  which is imported from  configuration file i.e. config.js, indicating the base URL for API requests.
+2.State Variables: state variable totalRevenue is initialized with null using the useState hook. This state will be used to store the total revenue data fetched from the server.
+3.fetchTotalRevenue Function: This function is defined to make an HTTP GET request to the server using axios. It sends a GET request to the URL ${API_BASE_URL}/total-revenue inside the function If the response status is 200 (indicating a successful response), the setTotalRevenue function is called to update the totalRevenue state with the data from the response and If the response status is not 200, an error message is logged to the console to indicate a failure in fetching data.
+4.After that rendering the total revenue if it's not null, and if it is null showing a message indicating that data is not available and suggests adding sales entries.
+5.And finally the TotalRevenue component is exported as the default export, making it available for use in other parts of the application.
+
+Note: First register a user then login to see all available navigation menus I am only showing the navbar menus according to active session of user, if user is not login then only register and login menu is visible in navigation.
+
